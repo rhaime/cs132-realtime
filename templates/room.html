@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="roomName" content="{{roomName}}">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Room: {{roomName}}</title>
+    <script
+      src="https://code.jquery.com/jquery-3.1.1.min.js"
+      integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
+      crossorigin="anonymous">
+    </script>
+
+</head>
+<body>
+  <script src="/socket.io/socket.io.js">
+  </script>
+  <script> var socket = io(); </script>
+  <!-- <script type='text/javascript' src='chatroom.js'> -->
+  
+  <script type='text/javascript'>
+
+var socket = io.connect();
+var sign = "";
+var meta = document.querySelector('meta[name=roomName]');
+var roomName = meta.content;
+
+$(document).ready(function(){
+
+    // process new message sever sent
+    socket.on('message', function(nickname, message, time){ 
+      // socket.broadcast
+      var message = $("#messageField").val()
+      // emit message back to server
+      socket.emit('message', nickname, message);
+      // display a newly-arrived message
+      $('#chats').append($('<li>').text(nickname + ': ' + message + ', ' + time));
+    });
+
+    socket.on('join', function(members){
+        // display the new member list
+        // update html -- new member joined, append to ul
+    });
+    
+    socket.emit('nickname', function(nickname){
+      // send new nickname from html to server
+      // broadcast membershipChanged 
+    });
+
+    // prompt for nickname
+    var nickname = prompt('Enter a nickname:');
+
+    // process the list of messages the server sent back
+    socket.emit('join', meta, nickname, function(messages){
+        
+        // callback that gets the messages from server
+        var ul = $('#chats');
+        ul.empty();
+
+        // work with messages
+        // eachMsg should be an array w/ all info
+        var eachMsg = res.rows;
+
+        for (var i=0; i<eachMsg.length; i++){
+            var li = $('<li></li>');
+
+            li.html(
+                res.rows[i].nickname + ': ' + res.rows[i].body + ', ' + res.rows[i].time
+            );
+
+            ul.append(li);
+        }
+    });
+
+
+
+});
+
+  </script>
+
+  <div id="chatroomContainer">
+      <h1>Welcome to Chatroom {{roomName}}!</h1>
+      <h1>Type your Message</h1>
+      <input type="text" name="message"   id="messageField">
+      <input type="hidden" name="nickname" id="nicknameField" value="">
+      <button value="Send" onclick="postOneChat()">Send</button>
+  </div>
+
+  <div id="changeUsername">
+    <p>Change your username: </p>
+      <input type="text" name="message"   id="newUsername" value="new name">
+      <button value="Send" onclick="postOneChat()">Update</button>
+  </div>
+
+  <div>
+    <p id="currentUsers">
+    </p>
+  </div>
+
+  <div id="allChats">
+      <ul id="chats"></ul>
+  </div>
+
+</body>
+</html>

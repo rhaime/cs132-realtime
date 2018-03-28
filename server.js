@@ -75,12 +75,14 @@ io.sockets.on('connection', function(socket){
       var date = new Date();
       var timee = date.getHours() + ":" + date.getMinutes();
 
+      
       // add to database
       conn.query('INSERT INTO message (room, nickname, body, time) VALUES($1, $2, $3, $4)', [roomNamee, nicknamee, message, timee], function(error, data) {
         });
 
       // send back to roomname the message, along with other info to display
       io.sockets.in(roomNamee).emit('message', nicknamee, message, timee);
+
     
     });
 

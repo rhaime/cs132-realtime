@@ -20,15 +20,24 @@
   var socket = io.connect();
   var meta = document.querySelector('meta[name=roomName]');
   var roomName = meta.content;
+
+
+$(document).ready(function(){
+
   var nickname = prompt('Enter a nickname: ');
-  
   // replaced meta for roomName
   // sends roomname and nickname to the server
   socket.emit('join', roomName, nickname, function(messages){
     // in response, the server sent back an array of messages from that room
     // each item is a row
     // append those messages to show up
+    // console.log(roomName)
+    // console.log(nickname)
+    // console.log(messages)
+
+
     for (var i=0; i<messages.length; i++){
+      console.log("old messages added")
       var ul = $('#chats');
       ul.empty();
 
@@ -42,6 +51,10 @@
 
     });
 
+});
+
+
+
   function changedNickname(){
     socket.on('changedNickname', function(members){
       newNickname = document.getElementById('newUsername').value;
@@ -50,15 +63,18 @@
 
   function message(){
 
-    socket.emit('message', function(message){
-      var message = document.getElementById('messageField').value;
-      console.log("inside")
-    });
+    // socket.emit('message', function(message){
+    //   var message = document.getElementById('messageField').value;
+    //   console.log("inside")
+    // });
+
+    var message = document.getElementById('messageField').value;
+    socket.emit('message', message);
 
     socket.on('message', function(nickname, message, time){
+      console.log(message)
       var ul = $('#chats');
       ul.append($('<li></li>').text(nickname + ': ' + message + ', ' + time));
-      //ul.append($('<li></li>').text("nickname" + ': ' + "message" + ', ' + "time"));
     });
   }
 

@@ -21,6 +21,8 @@ app.engine('html', engines.hogan);
 app.set('views', __dirname + '/templates');
 app.set('view engine', 'html');
 
+var messages = []
+
 // show home.html
 app.get('/', function(req, res){
   res.sendFile(path.join(__dirname + '/templates/home.html'));
@@ -38,13 +40,24 @@ app.get('/chatroom/:roomName', function(req, res){
 
 io.sockets.on('connection', function(socket){
 
+    // on client side we sent back the roomname and the nickname
     socket.on('join', function(roomName, nickname, callback){
+      
+      // join the room name that is passed
       socket.join(roomName);
+
+      // add a nickname property to the socket and set it to emitted nickname
       socket.nickname = nickname;
 
-      var messages = 'SELECT * FROM message WHERE room=$1';
+      // send back the messages already saved in that room, if any
+      conn.query('SELECT * FROM message WHERE room=$1', function(error, data){
+        // each item in this array is one message
+        messages = data.rows;
+      });
 
+      // send back messages, where each item is a single message with all 3 elements
       callback(messages);
+
       broadcastMemberJoined();
     });
 
@@ -54,9 +67,21 @@ io.sockets.on('connection', function(socket){
     });
 
     socket.on('message', function(message){
-      var roomName = Object.keys(io.sockets.adapter.sids[socket.id])[1];
+
+      // overall: process an incoming new message
+
+      var roomNamee = Object.keys(io.sockets.adapter.sids[socket.id])[1];
+      var nicknamee = socket.nickname
+      var date = new Date();
+      var timee = date.getHours() + ":" + date.getMinutes();
+
+      // add to database
+      conn.query('INSERT INTO message (room, nickname, body, time) VALUES($1, $2, $3, $4)', [roomNamee, nicknamee, message, timee], function(error, data) {
+        });
+
       // send back to roomname the message, along with other info to display
-      io.sockets.in(roomName).emit('message', nickname, message, time);
+      io.sockets.in(roomNamee).emit('message', nicknamee, message, timee);
+    
     });
 
     socket.on('disconnect', function(){
@@ -77,6 +102,29 @@ function broadcastMemberJoined(roomName, nickname) {
     io.sockets.in(roomName).emit('newMember', nickname);
 
 }
+
+// app.post('/:roomName/messages', saveMessage);
+
+// // change to socket (on message, save the message,)
+// // add chat information to database
+
+// function saveMessage(req, res) {
+
+//   var roomm = req.params.roomName;
+//   var nicknamee = req.body.nickname;
+//   var bodyy = req.body.message;
+//   var date = new Date();
+//   var timee = date.getHours() + ":" + date.getMinutes();
+
+//   conn.query('INSERT INTO message (room, nickname, body, time) VALUES($1, $2, $3, $4)', [roomm, nicknamee, bodyy, timee], function(error, data) { 
+//       if(error){
+//           console.log("failed to add to database....")
+//           res.sendStatus(500);
+//       } else {
+//           console.log("added")
+//           res.json({nickname: nicknamee, message: bodyy, time:timee})
+//       }
+//   })};
 
 function generateRoomIdentifier() {
   var chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -116,28 +164,6 @@ server.listen(port);
 console.log("listening to port " + port)
 
 /**
-
-app.post('/:roomName/messages', saveMessage);
-
-// change to socket (on message, save the message,)
-// add chat information to database
-function saveMessage(req, res) {
-    console.log("saving message")
-  var roomm = req.params.roomName;
-  var nicknamee = req.body.nickname;
-  var bodyy = req.body.message;
-  var date = new Date();
-  var timee = date.getHours() + ":" + date.getMinutes();
-
-  var msgss = conn.query('INSERT INTO message (room, nickname, body, time) VALUES($1, $2, $3, $4)', [roomm, nicknamee, bodyy, timee], function(error, data) {
-      if(error){
-          console.log("failed to add to database....")
-          res.sendStatus(500);
-      } else {
-          console.log("added")
-          res.json({nickname: nicknamee, message: bodyy, time:timee})
-      }
-  })};
 
 
 app.use(function(req, res) {

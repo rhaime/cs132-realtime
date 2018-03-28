@@ -17,51 +17,67 @@
 
 <script type="text/javascript">
 
-  //var socket = io();
   var socket = io.connect();
   var meta = document.querySelector('meta[name=roomName]');
   var roomName = meta.content;
+  var nickname = prompt('Enter a nickname: ');
+  
+  // replaced meta for roomName
+  // sends roomname and nickname to the server
+  socket.emit('join', roomName, nickname, function(messages){
+    // in response, the server sent back an array of messages from that room
+    // each item is a row
+    // append those messages to show up
+    for (var i=0; i<messages.length; i++){
+      var ul = $('#chats');
+      ul.empty();
 
-  $(document).ready(function(){
+      var li = $('<li></li>');
+      li.html(
+        messages[i].nickname + ': ' + messages[i].body + ', ' + messages[i].time
+      );
 
-    var nickname = prompt('Enter a nickname: ');
-    
-    socket.emit('join', meta, nickname, function(messages){
-      });
-
-    function changedNickname(){
-      socket.on('changedNickname', function(members){
-        newNickname = document.getElementById('newUsername').value;
-      });
+      ul.append(li);
     }
 
-    function sendMessage(){
+    });
+
+  function changedNickname(){
+    socket.on('changedNickname', function(members){
+      newNickname = document.getElementById('newUsername').value;
+    });
+  }
+
+  function message(){
+
+    socket.emit('message', function(message){
       var message = document.getElementById('messageField').value;
+      console.log("inside")
+    });
 
-      socket.on('message', function(nickname, message, time){
-        var ul = $('#chats');
-        ul.append($('<li></li>').text(res.nickname + ': ' + res.message + ', ' + res.time));
-      });
-    }
+    socket.on('message', function(nickname, message, time){
+      var ul = $('#chats');
+      ul.append($('<li></li>').text(nickname + ': ' + message + ', ' + time));
+      //ul.append($('<li></li>').text("nickname" + ': ' + "message" + ', ' + "time"));
+    });
+  }
 
-
-  });
 
 </script>
 
 <body>
 
   <h1>Welcome to Chatroom {{roomName}}!</h1>
-  <h1>Type your Message</h1>
 
   <div id="changeUsernameContainer">
-    <p>Change your username: </p>
-      <input type="text" name="message" id="newUsername" value="new name">
+    <p>Change username: </p>
+      <input type="text" name="username" id="newUsername" value="new name">
       <button value="Send" onclick="changedNickname()">Change</button>
   </div>
 
   <div id="sendMessageContainer">
-      <input type="text" name="message"   id="messageField">
+      <p>Send message</p>
+      <input type="text" name="message" id="messageField">
       <button value="Send" onclick="message()">Send</button>
   </div>
 

@@ -48,7 +48,7 @@ io.sockets.on('connection', function(socket){
       broadcastMemberJoined();
     });
 
-    socket.on('nickname', function(nickname){
+    socket.on('changedNickname', function(nickname){
         socket.nickname = nickname;
         broadcastMemberJoined();
     });
@@ -62,7 +62,7 @@ io.sockets.on('connection', function(socket){
     socket.on('disconnect', function(){
         // Leave the room!
         // notify others
-        
+
         broadcastMemberJoined();
     });
 

@@ -78,6 +78,7 @@ io.sockets.on('connection', function(socket){
       
       // add to database
       conn.query('INSERT INTO message (room, nickname, body, time) VALUES($1, $2, $3, $4)', [roomNamee, nicknamee, message, timee], function(error, data) {
+        //console.log(messageTable)
         });
 
       // send back to roomname the message, along with other info to display

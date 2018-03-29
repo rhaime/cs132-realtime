@@ -59,21 +59,15 @@ $(document).ready(function(){
   }
 
   function message(){
-
-    // socket.emit('message', function(message){
-    //   var message = document.getElementById('messageField').value;
-    //   console.log("inside")
-    // });
-
     var message = document.getElementById('messageField').value;
     socket.emit('message', message);
-
-    socket.on('message', function(nickname, message, time){
-      console.log(message)
-      var ul = $('#chats');
-      ul.append($('<li></li>').text(nickname + ': ' + message + ', ' + time));
-    });
   }
+
+  socket.on('message', function(nickname, message, time){
+    console.log(message)
+    var ul = $('#chats');
+    ul.append($('<li></li>').text(nickname + ': ' + message + ', ' + time));
+  });
 
 
 </script>

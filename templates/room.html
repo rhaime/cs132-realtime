@@ -27,12 +27,14 @@ $(document).ready(function(){
   var nickname = prompt('Enter a nickname: ');
   // replaced meta for roomName
   // sends roomname and nickname to the server
-  socket.emit('join', roomName, nickname, function(messages){
+
+  socket.emit('join', roomName, nickname);
+  //socket.emit('join', roomName, nickname);
     // in response, the server sent back an array of messages from that room
     // each item is a row
     // append those messages to show up
-    //console.log(messages)
 
+  socket.on('join', function(messages){
     for (var i=0; i<messages.length; i++){
       console.log("old messages added")
       var ul = $('#chats');
@@ -45,8 +47,8 @@ $(document).ready(function(){
 
       ul.append(li);
     }
+  });
 
-    });
 
 });
 

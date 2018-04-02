@@ -75,10 +75,10 @@ $(document).ready(function(){
 
   // handling when new member leaves
   socket.on('exitMember', function(nickname){
-    for (var i=0; i<usernames.length; i++){ 
-      if (usernames[i] == username){
-        // delete that username[i] from the list
-      }
+
+    var toDelete = usernames.indexOf(nickname);
+    if (toDelete > -1){
+      usernames.splice(toDelete, 1);
     }
 
     updateUsersList();

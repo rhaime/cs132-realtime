@@ -95,7 +95,7 @@ io.sockets.on('connection', function(socket){
         // notify others
 
         // instead of calling a function, instead emit on 'exitMember'
-        //io.sockets.in(socket.roomName).emit('exitMember', nickname);
+        io.sockets.in(roomNamee).emit('exitMember', socket.nickname);
     });
 
     socket.on('error', function(){

@@ -57,6 +57,7 @@ io.sockets.on('connection', function(socket){
           io.sockets.in(roomName).emit('join', messages);
         }
       });
+      
       io.sockets.in(roomName).emit('newMember', nickname);
     });
 
@@ -80,6 +81,7 @@ io.sockets.on('connection', function(socket){
           console.log("FAILED to add to database")
           res.sendStatus(500);
         } else {
+          console.log("inserted");
           messages = data.rows;
         }
       });
@@ -91,10 +93,6 @@ io.sockets.on('connection', function(socket){
 
 // emit the name of person leaving
     socket.on('disconnect', function(){
-        // Leave the room!
-        // notify others
-
-        // instead of calling a function, instead emit on 'exitMember'
         io.sockets.in(roomNamee).emit('exitMember', socket.nickname);
     });
 

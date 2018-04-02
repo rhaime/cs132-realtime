@@ -86,7 +86,7 @@ $(document).ready(function(){
   });
 
   // handling when member changes name
-  socket.on('changedNickname', function(oldNickname, newNickname){
+  socket.on('changedMember', function(oldNickname, newNickname){
     for (var i=0; i<usernames.length; i++){ 
       if (usernames[i] == oldNickname){
         usernames[i] == newNickname;
@@ -132,6 +132,7 @@ $(document).ready(function(){
   </div>
 
   <div id="allChats">
+    <p>Messages:</p>
     <ul id="chats"></ul>
   </div>
 

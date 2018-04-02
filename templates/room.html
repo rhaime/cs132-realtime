@@ -20,23 +20,20 @@
   var socket = io.connect();
   var meta = document.querySelector('meta[name=roomName]');
   var roomName = meta.content;
+  var usernames = []
+  var nickname = null;
 
 
 $(document).ready(function(){
 
-  var nickname = prompt('Enter a nickname: ');
-  // replaced meta for roomName
-  // sends roomname and nickname to the server
+  updateUsersList();
+
+  nickname = prompt('Enter a nickname: ');
 
   socket.emit('join', roomName, nickname);
-  //socket.emit('join', roomName, nickname);
-    // in response, the server sent back an array of messages from that room
-    // each item is a row
-    // append those messages to show up
 
   socket.on('join', function(messages){
     for (var i=0; i<messages.length; i++){
-      console.log("old messages added")
       var ul = $('#chats');
       ul.empty();
 
@@ -50,14 +47,13 @@ $(document).ready(function(){
   });
 
 
+
 });
 
-
-
   function changedNickname(){
-    socket.on('changedNickname', function(members){
-      newNickname = document.getElementById('newUsername').value;
-    });
+    newNickname = document.getElementById('newUsername').value;
+    // send new nickname to server
+    socket.emit('changedNickname', roomName, nickname, newNickname);
   }
 
   function message(){
@@ -70,6 +66,46 @@ $(document).ready(function(){
     var ul = $('#chats');
     ul.append($('<li></li>').text(nickname + ': ' + message + ', ' + time));
   });
+
+  // handling when new member joins
+  socket.on('newMember', function(nickname){
+    usernames.push(nickname);
+    updateUsersList();
+  });
+
+  // handling when new member leaves
+  socket.on('exitMember', function(nickname){
+    for (var i=0; i<usernames.length; i++){ 
+      if (usernames[i] == username){
+        // delete that username[i] from the list
+      }
+    }
+
+    updateUsersList();
+
+  });
+
+  // handling when member changes name
+  socket.on('changedNickname', function(oldNickname, newNickname){
+    for (var i=0; i<usernames.length; i++){ 
+      if (usernames[i] == oldNickname){
+        usernames[i] == newNickname;
+      }
+    }
+
+    updateUsersList();
+  });
+
+  function updateUsersList(){
+
+    var ul = $('#currentUsers');
+    ul.empty();
+
+    for (var i=0; i<usernames.length; i++){ 
+      ul.append($('<li></li>').text(usernames[i]));
+    }
+
+  }
 
 
 </script>
@@ -90,10 +126,9 @@ $(document).ready(function(){
       <button value="Send" onclick="message()">Send</button>
   </div>
 
-
-
   <div>
-      <p id="currentUsers"></p>
+      <p>Active Users:</p>
+      <ul id="currentUsers"></ul>
   </div>
 
   <div id="allChats">

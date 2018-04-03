@@ -22,6 +22,7 @@
   var roomName = meta.content;
   var usernames = []
   var nickname = null;
+  var listOfNames = [];
 
 
 $(document).ready(function(){
@@ -46,32 +47,19 @@ $(document).ready(function(){
      
     usernames = users;
 
-    // what I need to do is basically create a usernames array
-    // that only has usernames, not list of a list
-    // then manipulate this list
-    
-    // var listOfNames = [];
-    // for (var i=0; i<usernames.length; i++){ 
-    //   listOfNames.push(usernames[i].nickname);
-    // }
-
-    var ul = $('#currentUsers');
-    ul.empty();
+    // create a usernames array with only usernames, not list of a list
+    listOfNames = [];
 
     for (var i=0; i<usernames.length; i++){ 
-      ul.append($('<li></li>').text(usernames[i].nickname));
+      listOfNames.push(usernames[i].nickname);
     }
+
+    // helper for adding to html
+    updateUsersList(listOfNames);
 
   });
 
 });
-
-  function changedNickname(){
-    var oldNickname = nickname;
-    newNickname = document.getElementById('newUsername').value;
-    // send new nickname to server
-    socket.emit('changedNickname', roomName, oldNickname, newNickname);
-  }
 
   function message(){
     var message = document.getElementById('messageField').value;
@@ -85,48 +73,35 @@ $(document).ready(function(){
 
     usernames = users;
 
-    var ul = $('#currentUsers');
-    ul.empty();
+    listOfNames = [];
 
     for (var i=0; i<usernames.length; i++){ 
-      ul.append($('<li></li>').text(usernames[i].nickname));
+      listOfNames.push(usernames[i].nickname);
     }
+
+    updateUsersList(listOfNames);
 
   });
 
-  // // handling when new member joins
-  // socket.on('newMember', function(nickname){
-  //   usernames.push(nickname);
-  //   // updateUsersList();
-  // });
+  function changedNickname(){
+    var oldNickname = nickname;
+    newNickname = document.getElementById('newUsername').value;
+    // send new nickname to server
+    socket.emit('changedNickname', roomName, oldNickname, newNickname);
+  }
 
   // handling when member changes name
   socket.on('changedMember', function(oldNickname, newNickname){
 
-    // for (var i=0; i<usernames.length; i++){ 
-    //   if (usernames[i] == oldNickname){
-    //     usernames[i] == newNickname;
-    //   }
-    // }
-
-    var listOfNames = [];
-    for (var i=0; i<usernames.length; i++){ 
-      listOfNames.push(usernames[i].nickname);
-    }
+    listOfNames = [];
 
     var toChange = listOfNames.indexOf(oldNickname);
     if (toChange !== -1){
       listOfNames[toChange] = newNickname;
     }
 
-    console.log(listOfNames);
+    updateUsersList(listOfNames);
 
-    var ul = $('#currentUsers');
-    ul.empty();
-
-    for (var i=0; i<listOfNames.length; i++){ 
-      ul.append($('<li></li>').text(listOfNames[i]));
-    }
   });
 
   //   // handling when new member leaves
@@ -149,13 +124,13 @@ $(document).ready(function(){
 
   // });
 
-  function updateUsersList(){
+  function updateUsersList(array){
 
     var ul = $('#currentUsers');
     ul.empty();
 
-    for (var i=0; i<usernames.length; i++){ 
-      ul.append($('<li></li>').text(usernames[i].nickname));
+    for (var i=0; i<array.length; i++){ 
+      ul.append($('<li></li>').text(array[i]));
     }
 
   }

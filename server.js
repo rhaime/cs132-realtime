@@ -86,6 +86,7 @@ io.sockets.on('connection', function(socket){
 
       roomNamee = Object.keys(io.sockets.adapter.sids[socket.id])[1];
       var nicknamee = socket.nickname
+      console.log(nicknamee);
       var date = new Date();
       var timee = date.getHours() + ":" + date.getMinutes();
       

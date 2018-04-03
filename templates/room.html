@@ -26,13 +26,11 @@
 
 $(document).ready(function(){
 
-  updateUsersList();
-
   nickname = prompt('Enter a nickname: ');
 
   socket.emit('join', roomName, nickname);
 
-  socket.on('join', function(messages){
+  socket.on('join', function(messages, users){
     for (var i=0; i<messages.length; i++){
       var ul = $('#chats');
       ul.empty();
@@ -44,16 +42,35 @@ $(document).ready(function(){
 
       ul.append(li);
     }
+
+     
+    usernames = users;
+
+    // what I need to do is basically create a usernames array
+    // that only has usernames, not list of a list
+    // then manipulate this list
+    
+    // var listOfNames = [];
+    // for (var i=0; i<usernames.length; i++){ 
+    //   listOfNames.push(usernames[i].nickname);
+    // }
+
+    var ul = $('#currentUsers');
+    ul.empty();
+
+    for (var i=0; i<usernames.length; i++){ 
+      ul.append($('<li></li>').text(usernames[i].nickname));
+    }
+
   });
-
-
 
 });
 
   function changedNickname(){
+    var oldNickname = nickname;
     newNickname = document.getElementById('newUsername').value;
     // send new nickname to server
-    socket.emit('changedNickname', roomName, nickname, newNickname);
+    socket.emit('changedNickname', roomName, oldNickname, newNickname);
   }
 
   function message(){
@@ -61,40 +78,76 @@ $(document).ready(function(){
     socket.emit('message', message);
   }
 
-  socket.on('message', function(nickname, message, time){
+  socket.on('message', function(nickname, message, time, users){
     console.log(message)
     var ul = $('#chats');
     ul.append($('<li></li>').text(nickname + ': ' + message + ', ' + time));
-  });
 
-  // handling when new member joins
-  socket.on('newMember', function(nickname){
-    usernames.push(nickname);
-    updateUsersList();
-  });
+    usernames = users;
 
-  // handling when new member leaves
-  socket.on('exitMember', function(nickname){
+    var ul = $('#currentUsers');
+    ul.empty();
 
-    var toDelete = usernames.indexOf(nickname);
-    if (toDelete > -1){
-      usernames.splice(toDelete, 1);
+    for (var i=0; i<usernames.length; i++){ 
+      ul.append($('<li></li>').text(usernames[i].nickname));
     }
 
-    updateUsersList();
-
   });
+
+  // // handling when new member joins
+  // socket.on('newMember', function(nickname){
+  //   usernames.push(nickname);
+  //   // updateUsersList();
+  // });
 
   // handling when member changes name
   socket.on('changedMember', function(oldNickname, newNickname){
+
+    // for (var i=0; i<usernames.length; i++){ 
+    //   if (usernames[i] == oldNickname){
+    //     usernames[i] == newNickname;
+    //   }
+    // }
+
+    var listOfNames = [];
     for (var i=0; i<usernames.length; i++){ 
-      if (usernames[i] == oldNickname){
-        usernames[i] == newNickname;
-      }
+      listOfNames.push(usernames[i].nickname);
     }
 
-    updateUsersList();
+    var toChange = listOfNames.indexOf(oldNickname);
+    if (toChange !== -1){
+      listOfNames[toChange] = newNickname;
+    }
+
+    console.log(listOfNames);
+
+    var ul = $('#currentUsers');
+    ul.empty();
+
+    for (var i=0; i<listOfNames.length; i++){ 
+      ul.append($('<li></li>').text(listOfNames[i]));
+    }
   });
+
+  //   // handling when new member leaves
+  // socket.emit('disconnect', nickname, usernames);
+
+  // // handling when new member leaves
+  // socket.on('exitMember', function(usernames){
+
+  //   // var toDelete = usernames.indexOf(nickname);
+  //   // if (toDelete > -1){
+  //   //   usernames.splice(toDelete, 1);
+  //   // }
+
+  //   var ul = $('#currentUsers');
+  //   ul.empty();
+
+  //   for (var i=0; i<usernames.length; i++){ 
+  //     ul.append($('<li></li>').text(usernames[i].nickname));
+  //   }
+
+  // });
 
   function updateUsersList(){
 
@@ -102,7 +155,7 @@ $(document).ready(function(){
     ul.empty();
 
     for (var i=0; i<usernames.length; i++){ 
-      ul.append($('<li></li>').text(usernames[i]));
+      ul.append($('<li></li>').text(usernames[i].nickname));
     }
 
   }

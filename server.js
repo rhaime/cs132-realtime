@@ -21,8 +21,11 @@ app.engine('html', engines.hogan);
 app.set('views', __dirname + '/templates');
 app.set('view engine', 'html');
 
-var messages = []
+var messages = [];
 var roomNamee = null;
+var users = [];
+// dictionary
+//var activeUsers = [];
 
 // show home.html
 app.get('/', function(req, res){
@@ -50,15 +53,27 @@ io.sockets.on('connection', function(socket){
       // send back the messages already saved in that room, if any
       conn.query('SELECT * FROM message WHERE room=$1', [roomName], function(error, data){
         if (error){
-          console.log("FAILED to add to database");
-          res.sendStatus(500);
+            console.log("FAILED to add to database");
+            res.sendStatus(500);
         } else {
-          messages = data.rows;
-          io.sockets.in(roomName).emit('join', messages);
+            messages = data.rows;
+
+            // also send back nicknames
+            conn.query('SELECT DISTINCT nickname FROM message WHERE room=$1', [roomName], function(error, data){
+              if (error){
+                console.log("FAILED to add to database");
+                res.sendStatus(500);
+              } else {
+                users = data.rows;
+                //console.log(users);
+                // emit array of past messages and users
+                io.sockets.in(roomName).emit('join', messages, users);
+              }
+            });
         }
-      });
-      
-      io.sockets.in(roomName).emit('newMember', nickname);
+
+      }); 
+      //io.sockets.in(roomName).emit('newMember', nickname);
     });
 
     socket.on('changedNickname', function(roomName, oldNickname, newNickname){
@@ -76,24 +91,49 @@ io.sockets.on('connection', function(socket){
       
       // add to database
       conn.query('INSERT INTO message (room, nickname, body, time) VALUES($1, $2, $3, $4)', [roomNamee, nicknamee, message, timee], function(error, data) {
-        console.log(messageTable);
         if (error){
           console.log("FAILED to add to database")
           res.sendStatus(500);
         } else {
-          console.log("inserted");
           messages = data.rows;
+
+
+          conn.query('SELECT DISTINCT nickname FROM message WHERE room=$1', [roomNamee], function(error, data){
+            if (error){
+              console.log("FAILED to add to database");
+              res.sendStatus(500);
+            } else {
+              users = data.rows;
+              //console.log(users);
+              // emit array of past messages and users
+              io.sockets.in(roomNamee).emit('message', nicknamee, message, timee, users);
+            }
+          });
+
+
+
         }
       });
 
       // send back to roomname the message, along with other info to display
-      io.sockets.in(roomNamee).emit('message', nicknamee, message, timee);
+      //io.sockets.in(roomNamee).emit('message', nicknamee, message, timee);
     
     });
 
 // emit the name of person leaving
-    socket.on('disconnect', function(){
-        io.sockets.in(roomNamee).emit('exitMember', socket.nickname);
+    socket.on('disconnect', function(nickname, usernames){
+        // //io.sockets.in(roomNamee).emit('exitMember', socket.nickname);
+
+        // users = usernames;
+
+        // var toDelete = users.indexOf(nickname);
+        // if (toDelete > -1){
+        //   users.splice(toDelete, 1);
+        // }
+
+        // io.sockets.in(roomNamee).emit('exitMember', users);
+
+
     });
 
     socket.on('error', function(){
@@ -144,10 +184,10 @@ console.log("listening to port " + port)
 
 
 app.use(function(req, res) {
-	res.status(404).type('html');
+  res.status(404).type('html');
     res.write('<h1>404 - Page Not Found</h1>');
     res.end();
-	});
+  });
 
 */
 
